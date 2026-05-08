@@ -1,0 +1,387 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Unified dreamy Y2K chrome — blue-tinted grays, softer than pure Win98 */
+  --win-blue: #2a3f6e;
+  --win-blue-light: #4f8fd9;
+  --win-gray: #c4d0e4;
+  --win-dark-gray: #8899ae;
+  --win-darker-gray: #4a5568;
+  --win-white: #f6f8fc;
+  --dream-accent: #0d1b3d;
+  --dream-menu-hover: #3a5588;
+  --dream-deep-bg: #1a355e;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #6f9fd8; /* Match desktop sky edge */
+  font-family: 'MS Sans Serif', 'Tahoma', 'SimSun', 'VT323', sans-serif;
+  /* Pixelated cursor */
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='24'%3E%3Cpolygon points='0,0 0,18 5,13 8,20 11,19 8,12 14,12' fill='white' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") 0 0, auto;
+  /* Disable antialiasing for true retro feel */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Classic Win98 Setup Background */
+.win98-setup-bg {
+  background-color: #000000;
+  background-image: 
+    linear-gradient(45deg, #008080 25%, transparent 25%, transparent 75%, #008080 75%, #008080), 
+    linear-gradient(45deg, #008080 25%, transparent 25%, transparent 75%, #008080 75%, #008080);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+/* Pure Win98 Bevels */
+.win-bevel-out {
+  border: 2px solid;
+  border-color: var(--win-white) var(--win-darker-gray) var(--win-darker-gray) var(--win-white);
+  box-shadow: inset 1px 1px 0 var(--win-gray), inset -1px -1px 0 var(--win-dark-gray);
+  background-color: var(--win-gray);
+}
+
+.win-bevel-in {
+  border: 2px solid;
+  border-color: var(--win-darker-gray) var(--win-white) var(--win-white) var(--win-darker-gray);
+  box-shadow: inset 1px 1px 0 var(--win-dark-gray), inset -1px -1px 0 var(--win-gray);
+  background-color: var(--win-white);
+}
+
+.win-title-bar {
+  color: white;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  font-family: 'MS Sans Serif', 'Tahoma', 'SimSun', sans-serif;
+  font-weight: bold;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.win-btn {
+  background: var(--win-gray);
+  border: 2px solid;
+  border-color: var(--win-white) var(--win-darker-gray) var(--win-darker-gray) var(--win-white);
+  box-shadow: inset 1px 1px 0 var(--win-gray), inset -1px -1px 0 var(--win-dark-gray);
+  font-family: 'MS Sans Serif', 'Tahoma', 'SimSun', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: black;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.win-btn:active {
+  border-color: var(--win-darker-gray) var(--win-white) var(--win-white) var(--win-darker-gray);
+  box-shadow: inset 1px 1px 0 var(--win-dark-gray), inset -1px -1px 0 var(--win-gray);
+  padding: 2px 0 0 2px; /* Shift content on click */
+}
+
+/* Specific button style for title bar (smaller, exact padding) */
+.win-title-btn {
+  width: 16px;
+  height: 14px;
+  margin-left: 2px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* CRT Scanlines */
+.crt-overlay::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 9999;
+  background-size: 100% 3px, 3px 100%;
+  pointer-events: none;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.98; }
+  5% { opacity: 0.95; }
+  10% { opacity: 0.9; }
+  15% { opacity: 0.96; }
+  25% { opacity: 0.92; }
+  30% { opacity: 1; }
+  100% { opacity: 0.98; }
+}
+
+.crt-flicker {
+  animation: flicker 0.25s infinite;
+}
+
+/* Dreamy sky: lavender → cyan (fairy-kei / pastel cosmic) */
+.night-sky-breathing {
+  background:
+    radial-gradient(ellipse 85% 65% at 48% 38%, rgba(255, 255, 255, 0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 48% at 8% 12%, rgba(220, 200, 255, 0.55) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 42% at 94% 18%, rgba(130, 210, 255, 0.48) 0%, transparent 58%),
+    radial-gradient(ellipse 68% 58% at 72% 88%, rgba(170, 230, 255, 0.42) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 40% at 30% 75%, rgba(255, 190, 230, 0.2) 0%, transparent 50%),
+    linear-gradient(180deg, #a889d4 0%, #6f9fd8 38%, #7ec9ea 72%, #b8ecff 100%);
+  background-size: 200% 200%, 190% 190%, 190% 190%, 210% 210%, 180% 180%, 220% 220%;
+  background-position: 30% 20%, 0% 30%, 100% 10%, 70% 90%, 20% 80%, 50% 50%;
+  animation: dreamy-sky-shift 26s ease-in-out infinite alternate;
+}
+
+@keyframes dreamy-sky-shift {
+  0% {
+    background-position: 20% 10%, 5% 40%, 95% 5%, 65% 85%, 15% 70%, 45% 45%;
+  }
+  100% {
+    background-position: 80% 90%, 100% 0%, 0% 100%, 85% 15%, 90% 30%, 55% 55%;
+  }
+}
+
+/* Soft film grain + faint scanlines (dreamy, not retro pixel grid) */
+.dreamy-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.07;
+}
+
+.dreamy-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.03) 2px,
+    rgba(255, 255, 255, 0.03) 3px
+  );
+  opacity: 0.35;
+}
+
+.dreamy-vignette {
+  background: radial-gradient(ellipse at 50% 45%, transparent 0%, transparent 55%, rgba(45, 60, 120, 0.35) 100%);
+  pointer-events: none;
+}
+
+/* Nebula blobs behind stars (wrap in positioned parent; center with translate) */
+.dreamy-nebula-blob {
+  display: block;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: nebula-drift 32s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes nebula-drift {
+  0% { transform: scale(1); opacity: 0.45; }
+  100% { transform: scale(1.12); opacity: 0.62; }
+}
+
+@keyframes dream-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.92); }
+  40% { opacity: 1; transform: scale(1.08); }
+  70% { opacity: 0.75; transform: scale(1); }
+}
+
+/* Drift includes centering so it can run on the same node as twinkle without fighting translate(-50%,-50%). */
+@keyframes dream-drift {
+  0% { transform: translate(-50%, -50%) translate(0, 0) rotate(0deg); }
+  33% { transform: translate(-50%, -50%) translate(3px, -4px) rotate(1.2deg); }
+  66% { transform: translate(-50%, -50%) translate(-2px, 2px) rotate(-0.8deg); }
+  100% { transform: translate(-50%, -50%) translate(0, 0) rotate(0deg); }
+}
+
+@keyframes dream-sparkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.85); }
+  50% { opacity: 0.95; transform: scale(1.15); }
+}
+
+/* Fig.1-style decor: bubbles, notes, lens glints — keep subtle for icon legibility */
+.dreamy-decor-layer {
+  opacity: 0.34;
+  mix-blend-mode: soft-light;
+}
+
+@keyframes decor-float-1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(1.2%, -1.8%); }
+}
+
+@keyframes decor-float-2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-1.4%, 1.1%); }
+}
+
+@keyframes decor-float-3 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(0.8%, 1.4%) rotate(2deg); }
+}
+
+@keyframes decor-lens-pulse {
+  0%, 100% { opacity: 0.12; }
+  45% { opacity: 0.38; }
+  55% { opacity: 0.34; }
+}
+
+/* Pixel Star Grid - Brighter */
+.pixel-grid {
+  background-image: radial-gradient(rgba(0, 255, 255, 0.25) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0;
+}
+
+/* Floating Pixel Stickers */
+.pixel-sticker {
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2)) drop-shadow(0 0 8px rgba(0, 255, 255, 0.4));
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 150, 255, 0.3);
+}
+
+/* Custom Scrollbar for Win98 Feel */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+  background-color: var(--win-gray);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--win-gray);
+  border: 2px solid;
+  border-color: var(--win-white) var(--win-darker-gray) var(--win-darker-gray) var(--win-white);
+}
+
+::-webkit-scrollbar-button:single-button {
+  background-color: var(--win-gray);
+  border: 2px solid;
+  border-color: var(--win-white) var(--win-darker-gray) var(--win-darker-gray) var(--win-white);
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.aero-title-bar {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.win7-blue-bg {
+  background: radial-gradient(circle at 50% 50%, #1e5799 0%, #2989d8 50%, #207cca 100%);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+.map-glow {
+  filter: drop-shadow(0 0 10px rgba(79, 195, 247, 0.6));
+}
+
+.glossy-btn {
+  background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 50%, #d0d0d0 50%, #bcbcbc 100%);
+  border: 1px solid #707070;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.glossy-btn:hover {
+  background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 50%, #e0e0e0 50%, #cccccc 100%);
+}
+
+.glossy-btn:active {
+  background: linear-gradient(to bottom, #bcbcbc 0%, #d0d0d0 50%, #e0e0e0 50%, #ffffff 100%);
+}
+
+.y2k-text-glow {
+  text-shadow: 0 0 5px rgba(0, 255, 65, 0.5), 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+/* Cohesive UI: title bars, inactive chrome, menu hovers (use with Win98 bevels) */
+@layer utilities {
+  .u-dream-title {
+    background: linear-gradient(90deg, #2a3f6e 0%, #3d69a8 45%, #6badec 100%);
+  }
+  .u-dream-title-v {
+    background: linear-gradient(180deg, #2a3f6e 0%, #4f8fd9 100%);
+  }
+  .u-dream-title-muted {
+    background: linear-gradient(90deg, #5a6578 0%, #8899ad 100%);
+  }
+  .u-dream-title-warn {
+    background: linear-gradient(90deg, #5a4a78 0%, #8b6fa8 55%, #a894c4 100%);
+  }
+  .u-dream-hover:hover {
+    background-color: var(--dream-menu-hover);
+    color: #fff;
+  }
+}
+
+@keyframes y2k-memory-float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes y2k-memory-breathe {
+  0% { opacity: 0.78; filter: drop-shadow(0 0 6px var(--badge-accent)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 12px var(--badge-accent)); }
+  100% { opacity: 0.78; filter: drop-shadow(0 0 6px var(--badge-accent)); }
+}
+
+.y2k-memory-badge-fx {
+  animation:
+    y2k-memory-float 5.4s ease-in-out infinite var(--float-phase, 0s),
+    y2k-memory-breathe 4.8s ease-in-out infinite var(--float-phase, 0s);
+  will-change: transform, opacity, filter;
+}
+
+.win98-inset-input {
+  background: #ffffff;
+  border: 2px solid #7a7a7a;
+  box-shadow:
+    inset 1px 1px 0 #4f4f4f,
+    inset -1px -1px 0 #ffffff;
+}
+
+.win98-scrollbox::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+  background: #cfd7e4;
+}
+
+.win98-scrollbox::-webkit-scrollbar-thumb {
+  background: #b0bac9;
+  border: 2px solid;
+  border-color: #ffffff #7b8797 #7b8797 #ffffff;
+}
+
+.win98-scrollbox::-webkit-scrollbar-track {
+  background: #dbe2ee;
+}
+
+.win98-scrollbox::-webkit-scrollbar-button:single-button:vertical:decrement {
+  height: 16px;
+  background:
+    linear-gradient(135deg, transparent 50%, #4f5968 50%) center 9px / 6px 6px no-repeat,
+    #cfd7e4;
+  border: 2px solid;
+  border-color: #ffffff #7b8797 #7b8797 #ffffff;
+}
+
+.win98-scrollbox::-webkit-scrollbar-button:single-button:vertical:increment {
+  height: 16px;
+  background:
+    linear-gradient(-45deg, transparent 50%, #4f5968 50%) center 5px / 6px 6px no-repeat,
+    #cfd7e4;
+  border: 2px solid;
+  border-color: #ffffff #7b8797 #7b8797 #ffffff;
+}
