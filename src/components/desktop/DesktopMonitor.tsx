@@ -14,7 +14,7 @@ const formatUptime = (diff: number) => {
 
 export const DesktopMonitor: React.FC = () => {
   const appOpen = useDesktopStore(s => s.appOpen);
-  const openWindows = useDesktopStore(s => s.openWindows);
+  const activeWindows = useDesktopStore(s => s.activeWindows);
   const [uptime, setUptime] = useState('UP 000D 00:00:00');
   const [syncRate, setSyncRate] = useState(99.8);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,7 +29,7 @@ export const DesktopMonitor: React.FC = () => {
     }));
   };
 
-  const isHidden = appOpen === 'memories' || appOpen === 'photos' || openWindows.length > 0;
+  const isHidden = appOpen === 'memories' || appOpen === 'photos' || Object.keys(activeWindows).length > 0;
 
   useEffect(() => {
     const timer = setInterval(() => {

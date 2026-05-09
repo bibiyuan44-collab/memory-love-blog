@@ -14,9 +14,13 @@ const CONNECTION_STEPS = [
 type ConnectionPhase = 'form' | 'connecting' | 'success';
 
 export const DialUpConnection: React.FC = () => {
-  const appOpen = useDesktopStore(s => s.appOpen);
-  const openApp = useDesktopStore(s => s.openApp);
-  const closeApp = useDesktopStore(s => s.closeApp);
+  const openWindow = useDesktopStore(s => s.openWindow);
+  const closeWindow = useDesktopStore(s => s.closeWindow);
+  const focusWindow = useDesktopStore(s => s.focusWindow);
+  const minimizeWindow = useDesktopStore(s => s.minimizeWindow);
+  const activeWindow = useDesktopStore(s => s.activeWindows['dialup']);
+  const focusedWindowId = useDesktopStore(s => s.focusedWindowId);
+  const targetPoint = useDesktopStore((s) => s.taskbarButtonCenters.dialup);
   const setBbsConnected = useDesktopStore(s => s.setBbsConnected);
 
   const [phase, setPhase] = useState<ConnectionPhase>('form');
@@ -29,7 +33,11 @@ export const DialUpConnection: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const wasHiddenRef = useRef(true);
 
-  const isHidden = appOpen !== 'dialup';
+  const isHidden = !activeWindow;
+  const isMinimized = Boolean(activeWindow?.isMinimized);
+  const isActive = focusedWindowId === 'dialup' && !isMinimized;
+  const targetX = targetPoint ? `calc(-50% + ${targetPoint.x - window.innerWidth / 2}px)` : '-130%';
+  const targetY = targetPoint ? `calc(-50% + ${targetPoint.y - window.innerHeight / 2}px)` : '72vh';
 
   useEffect(() => {
     if (!isHidden && wasHiddenRef.current) {
@@ -65,7 +73,7 @@ export const DialUpConnection: React.FC = () => {
           setPhase('success');
           setBbsConnected(true);
           setTimeout(() => {
-            openApp('browser');
+            openWindow('browser', 'Netscape Navigator');
           }, 500);
         }, 1000);
       }
@@ -77,7 +85,7 @@ export const DialUpConnection: React.FC = () => {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    closeApp();
+    closeWindow('dialup');
   };
 
   useEffect(() => {
@@ -93,18 +101,37 @@ export const DialUpConnection: React.FC = () => {
     <AnimatePresence>
       {!isHidden && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
+          animate={{
+            opacity: isMinimized ? 0 : 1,
+            scale: isMinimized ? 0.25 : 1,
+            x: isMinimized ? targetX : '-50%',
+            y: isMinimized ? targetY : '-50%',
+          }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 pointer-events-none"
+          className="fixed left-1/2 top-1/2 z-[100] flex items-center justify-center bg-black/40 pointer-events-none"
+          style={{
+            zIndex: activeWindow?.zIndex ?? 100,
+            pointerEvents: isMinimized ? 'none' : 'auto',
+          }}
+          onPointerDown={() => {
+            if (isMinimized) return;
+            focusWindow('dialup');
+          }}
         >
-          <div className="win-bevel-out bg-[#c0c0c0] p-[2px] w-[380px] shadow-2xl pointer-events-auto">
-            <div className="h-[24px] bg-gradient-to-r from-[#000080] to-[#1084d0] flex items-center px-2 mb-[2px]">
+          <div className={`win-bevel-out bg-[#c0c0c0] p-[2px] w-[380px] shadow-2xl pointer-events-auto ${isActive ? '' : 'opacity-[0.96]'}`}>
+            <div className={`h-[24px] flex items-center px-2 mb-[2px] ${isActive ? 'bg-gradient-to-r from-[#000080] to-[#1084d0]' : 'bg-gradient-to-r from-[#5a5a86] to-[#7a8ca5]'}`}>
               <span className="text-white text-xs font-bold">连接到 - 秘密岛屿 BBS</span>
               <button
-                onClick={handleCancel}
+                onClick={() => minimizeWindow('dialup')}
                 className="win-btn win-title-btn text-white text-xs ml-auto pb-[1px]"
+              >
+                _
+              </button>
+              <button
+                onClick={handleCancel}
+                className="win-btn win-title-btn text-white text-xs pb-[1px]"
               >
                 ✕
               </button>

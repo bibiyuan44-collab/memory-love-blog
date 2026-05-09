@@ -13,7 +13,7 @@ const TUNING_THRESHOLD = 5.0;
 
 export const FMRadio: React.FC = () => {
   const appOpen = useDesktopStore(s => s.appOpen);
-  const openWindows = useDesktopStore(s => s.openWindows);
+  const activeWindows = useDesktopStore(s => s.activeWindows);
   const [isPowered, setIsPowered] = useState(false);
   const [currentFreq, setCurrentFreq] = useState(50.0);
   const [tuningStatus, setTuningStatus] = useState<'tuning' | 'locked'>('tuning');
@@ -21,7 +21,7 @@ export const FMRadio: React.FC = () => {
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
-  const isHidden = appOpen === 'memories' || appOpen === 'photos' || openWindows.length > 0;
+  const isHidden = appOpen === 'memories' || appOpen === 'photos' || Object.keys(activeWindows).length > 0;
 
   const noiseRef = useRef<HTMLAudioElement | null>(null);
   const stationsRef = useRef<Map<number, HTMLAudioElement>>(new Map());

@@ -5,15 +5,19 @@ export type { MemorySpot } from '@/data/memorySpots';
 interface DesktopState {
   booting: boolean;
   setBooting: (booting: boolean) => void;
-  
-  openWindows: string[];
-  windowOrder: string[]; // z-index management
-  activeMemory: string | null;
+
+  activeWindows: Record<string, DesktopWindow>;
+  taskbarButtonCenters: Record<string, WindowTargetPoint>;
+  highestZIndex: number;
+  focusedWindowId: string | null;
   lastOpenedMemory: string | null;
-  
-  openWindow: (id: string) => void;
+
+  openWindow: (id: string, title: string) => void;
   closeWindow: (id: string) => void;
   focusWindow: (id: string) => void;
+  minimizeWindow: (id: string) => void;
+  setWindowMaximized: (id: string, maximized: boolean) => void;
+  setTaskbarButtonCenter: (id: string, point: WindowTargetPoint | null) => void;
   
   ambientColor: string;
   setAmbientColor: (color: string) => void;
@@ -35,56 +39,136 @@ interface DesktopState {
   setBbsConnected: (connected: boolean) => void;
 }
 
+interface DesktopWindow {
+  id: string;
+  title: string;
+  isMinimized: boolean;
+  isMaximized: boolean;
+  zIndex: number;
+}
+
+interface WindowTargetPoint {
+  x: number;
+  y: number;
+}
+
+const getNextFocusedWindowId = (windows: Record<string, DesktopWindow>) => {
+  const candidates = Object.values(windows).filter((windowItem) => !windowItem.isMinimized);
+  if (candidates.length === 0) return null;
+  return candidates.reduce((top, current) => (current.zIndex > top.zIndex ? current : top)).id;
+};
+
 export const useDesktopStore = create<DesktopState>((set) => ({
   booting: true,
   setBooting: (booting) => set({ booting }),
-  
-  openWindows: [],
-  windowOrder: [],
-  activeMemory: null,
+
+  activeWindows: {},
+  taskbarButtonCenters: {},
+  highestZIndex: 10,
+  focusedWindowId: null,
   lastOpenedMemory: null,
-  
-  openWindow: (id) => set((state) => {
-    if (state.openWindows.includes(id)) {
-      return {
-        windowOrder: [...state.windowOrder.filter(w => w !== id), id],
-        activeMemory: id,
-        lastOpenedMemory: id
-      };
+
+  openWindow: (id, title) => set((state) => {
+    const nextZIndex = state.highestZIndex + 1;
+    const existing = state.activeWindows[id];
+    return {
+      activeWindows: {
+        ...state.activeWindows,
+        [id]: {
+          id,
+          title: existing?.title ?? title,
+          isMinimized: false,
+          isMaximized: existing?.isMaximized ?? false,
+          zIndex: nextZIndex,
+        },
+      },
+      highestZIndex: nextZIndex,
+      focusedWindowId: id,
+      lastOpenedMemory: id === 'food-memories' ? state.lastOpenedMemory : id,
+    };
+  }),
+
+  closeWindow: (id) => set((state) => {
+    const { [id]: _removed, ...remaining } = state.activeWindows;
+    const { [id]: _removedTarget, ...remainingTargets } = state.taskbarButtonCenters;
+    return {
+      activeWindows: remaining,
+      taskbarButtonCenters: remainingTargets,
+      focusedWindowId: getNextFocusedWindowId(remaining),
+    };
+  }),
+
+  focusWindow: (id) => set((state) => {
+    const current = state.activeWindows[id];
+    if (!current) return {};
+    const nextZIndex = state.highestZIndex + 1;
+    return {
+      activeWindows: {
+        ...state.activeWindows,
+        [id]: {
+          ...current,
+          isMinimized: false,
+          zIndex: nextZIndex,
+        },
+      },
+      highestZIndex: nextZIndex,
+      focusedWindowId: id,
+    };
+  }),
+
+  minimizeWindow: (id) => set((state) => {
+    const current = state.activeWindows[id];
+    if (!current) return {};
+    const nextWindows = {
+      ...state.activeWindows,
+      [id]: {
+        ...current,
+        isMinimized: true,
+      },
+    };
+    return {
+      activeWindows: nextWindows,
+      focusedWindowId: state.focusedWindowId === id ? getNextFocusedWindowId(nextWindows) : state.focusedWindowId,
+    };
+  }),
+
+  setWindowMaximized: (id, maximized) => set((state) => {
+    const current = state.activeWindows[id];
+    if (!current) return {};
+    return {
+      activeWindows: {
+        ...state.activeWindows,
+        [id]: {
+          ...current,
+          isMaximized: maximized,
+        },
+      },
+    };
+  }),
+
+  setTaskbarButtonCenter: (id, point) => set((state) => {
+    if (!point) {
+      const { [id]: _removed, ...remaining } = state.taskbarButtonCenters;
+      return { taskbarButtonCenters: remaining };
     }
     return {
-      openWindows: [...state.openWindows, id],
-      windowOrder: [...state.windowOrder, id],
-      activeMemory: id,
-      lastOpenedMemory: id
+      taskbarButtonCenters: {
+        ...state.taskbarButtonCenters,
+        [id]: point,
+      },
     };
   }),
-  
-  closeWindow: (id) => set((state) => {
-    const newOpen = state.openWindows.filter(w => w !== id);
-    const newOrder = state.windowOrder.filter(w => w !== id);
-    return {
-      openWindows: newOpen,
-      windowOrder: newOrder,
-      activeMemory: newOrder.length > 0 ? newOrder[newOrder.length - 1] : null
-    };
-  }),
-  
-  focusWindow: (id) => set((state) => ({
-    windowOrder: [...state.windowOrder.filter(w => w !== id), id],
-    activeMemory: id
-  })),
-  
+
   ambientColor: '#000020',
   setAmbientColor: (color) => set({ ambientColor: color }),
-  
+
   audioMuted: false,
   toggleAudio: () => set((state) => ({ audioMuted: !state.audioMuted })),
-  
+
   appOpen: null,
   openApp: (app) => set({ appOpen: app }),
-  closeApp: () => set({ appOpen: null, openWindows: [], windowOrder: [], activeMemory: null }),
-  
+  closeApp: () => set({ appOpen: null }),
+
   editingPointId: null,
   setEditingPointId: (editingPointId) => set({ editingPointId }),
 

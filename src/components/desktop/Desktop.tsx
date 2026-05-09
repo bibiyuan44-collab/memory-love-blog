@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDesktopStore } from '@/store/useDesktopStore';
 import { memorySpots } from '@/data/memorySpots';
@@ -48,19 +48,22 @@ const DesktopIcon = React.forwardRef<HTMLDivElement, DesktopIconProps>(
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 * index, type: 'spring', stiffness: 200 }}
-        className={`absolute group select-none flex flex-col items-center justify-center w-20 ${drag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+        className={`absolute group select-none flex flex-col items-center justify-start w-[96px] ${drag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
         onDoubleClick={onDoubleClick}
         style={{
-          left: `${20 + Math.floor(index / 6) * 90}px`,
-          top: `${20 + (index % 6) * 90}px`,
+          left: `${22 + Math.floor(index / 6) * 108}px`,
+          top: `${22 + (index % 6) * 108}px`,
           x: offset.x,
           y: offset.y
         }}
       >
-        <div className="mb-1 flex h-10 w-full items-center justify-center [image-rendering:pixelated] drop-shadow-[2px_2px_0_rgba(13,27,61,0.85)]">
+        <div className="mb-1.5 flex h-12 w-full items-center justify-center [image-rendering:pixelated] drop-shadow-[2px_2px_0_rgba(13,27,61,0.85)]">
           {icon}
         </div>
-        <span className="px-1 text-white font-bold text-xs text-center tracking-wide leading-tight group-hover:bg-[var(--dream-menu-hover)] group-hover:text-white transition-none w-full" style={{ fontFamily: 'MS Sans Serif, Tahoma, SimSun' }}>
+        <span
+          className="w-full min-h-[36px] px-1.5 py-[2px] text-white text-[12px] font-semibold text-center leading-[1.18] tracking-[0.01em] transition-colors duration-150 group-hover:text-[#d8deea]"
+          style={{ fontFamily: 'MS Sans Serif, Tahoma, SimSun', textShadow: '1px 1px 0 rgba(13,27,61,0.95)' }}
+        >
           {name}
         </span>
       </motion.div>
@@ -158,7 +161,12 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
   const [time, setTime] = useState(new Date());
   const openApp = useDesktopStore(s => s.openApp);
   const appOpen = useDesktopStore(s => s.appOpen);
+  const activeWindows = useDesktopStore(s => s.activeWindows);
+  const focusedWindowId = useDesktopStore(s => s.focusedWindowId);
   const openWindow = useDesktopStore(s => s.openWindow);
+  const focusWindow = useDesktopStore(s => s.focusWindow);
+  const minimizeWindow = useDesktopStore(s => s.minimizeWindow);
+  const setTaskbarButtonCenter = useDesktopStore(s => s.setTaskbarButtonCenter);
   const lastOpenedMemory = useDesktopStore(s => s.lastOpenedMemory);
   const bbsConnected = useDesktopStore(s => s.bbsConnected);
 
@@ -184,6 +192,27 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useLayoutEffect(() => {
+    const syncTaskbarCenters = () => {
+      Object.keys(activeWindows).forEach((windowId) => {
+        const tab = document.querySelector<HTMLElement>(`[data-window-tab-id="${windowId}"]`);
+        if (!tab) {
+          setTaskbarButtonCenter(windowId, null);
+          return;
+        }
+        const rect = tab.getBoundingClientRect();
+        setTaskbarButtonCenter(windowId, {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        });
+      });
+    };
+
+    syncTaskbarCenters();
+    window.addEventListener('resize', syncTaskbarCenters);
+    return () => window.removeEventListener('resize', syncTaskbarCenters);
+  }, [activeWindows, setTaskbarButtonCenter]);
 
   const handleDesktopClick = () => {
     setStartMenuOpen(false);
@@ -238,25 +267,25 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
   };
 
   const iconData: Record<string, { name: string; icon: React.ReactNode; action: () => void }> = {
-    memories: { name: 'Memories.exe', icon: <PixelIconHeart size={36} />, action: () => openApp('memories') },
-    photos: { name: 'Our Photos', icon: <PixelIconPolaroid size={36} />, action: () => openApp('photos') },
-    chat: { name: 'Chat History.txt', icon: <PixelIconDocLines size={36} />, action: () => {} },
-    food: { name: 'FOOD_LOG.EXE', icon: <PixelIconFoodLog size={36} />, action: () => openWindow('food-memories') },
-    trash: { name: 'Recycle Bin', icon: <PixelIconRecycle full={trashFull} size={36} />, action: () => {} },
-    fight: { name: '吵架记录.txt', icon: <PixelIconDoc size={36} />, action: () => {} },
-    sorry: { name: '对不起.txt', icon: <PixelIconDocHeart size={36} />, action: () => setSorryOpen(true) },
-    taskmgr: { name: 'TaskMgr.exe', icon: <PixelIconTaskmgr size={36} />, action: () => openApp('taskmanager') },
+    memories: { name: 'Memories.exe', icon: <PixelIconHeart size={40} />, action: () => openApp('memories') },
+    photos: { name: 'Our Photos', icon: <PixelIconPolaroid size={40} />, action: () => openApp('photos') },
+    chat: { name: 'Chat History.txt', icon: <PixelIconDocLines size={40} />, action: () => {} },
+    food: { name: 'Food_Log', icon: <PixelIconFoodLog size={40} />, action: () => openWindow('food-memories', 'Meal Tracker') },
+    trash: { name: 'Recycle Bin', icon: <PixelIconRecycle full={trashFull} size={40} />, action: () => {} },
+    fight: { name: '吵架记录.txt', icon: <PixelIconDoc size={40} />, action: () => {} },
+    sorry: { name: '对不起.txt', icon: <PixelIconDocHeart size={40} />, action: () => setSorryOpen(true) },
+    taskmgr: { name: 'TaskMgr.exe', icon: <PixelIconTaskmgr size={40} />, action: () => openApp('taskmanager') },
     dialup: {
       name: 'Dial-Up BBS',
       icon: (
         <div className="relative flex items-center justify-center">
-          <PixelIconDialup size={36} />
+          <PixelIconDialup size={40} />
           {!bbsConnected && (
             <div className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse rounded-full bg-[#00ff00] ring-1 ring-[#0d1b3d]" />
           )}
         </div>
       ),
-      action: () => openApp('dialup')
+      action: () => openWindow('dialup', 'Secret Island BBS')
     }
   };
 
@@ -320,7 +349,7 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
                       <div
                         key={spot.id}
                         className="px-2 py-1 flex items-center gap-2 u-dream-hover cursor-pointer font-normal truncate"
-                        onClick={() => { openWindow(spot.id); setStartMenuOpen(false); }}
+                        onClick={() => { openWindow(spot.id, spot.name); setStartMenuOpen(false); }}
                       >
                         <span className="text-[10px]">{spot.emoji}</span> {spot.name}
                       </div>
@@ -332,7 +361,9 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
                 className="px-3 py-1.5 flex items-center gap-2 u-dream-hover cursor-pointer"
                 onClick={() => {
                   if (lastOpenedMemory) {
-                    openWindow(lastOpenedMemory);
+                    const memory = memorySpots.find((spot) => spot.id === lastOpenedMemory);
+                    if (!memory) return;
+                    openWindow(lastOpenedMemory, memory.name);
                     setStartMenuOpen(false);
                   }
                 }}
@@ -431,10 +462,43 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
           </button>
           <div className="w-[2px] h-5 border-l border-[#808080] border-r border-white ml-1 mr-1" />
           <div className="flex gap-1 h-[22px]">
+            {Object.values(activeWindows)
+              .sort((a, b) => a.zIndex - b.zIndex)
+              .map((windowItem) => {
+                const isFocused = windowItem.id === focusedWindowId && !windowItem.isMinimized;
+                return (
+                  <button
+                    key={windowItem.id}
+                    type="button"
+                    data-window-tab-id={windowItem.id}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (windowItem.isMinimized) {
+                        focusWindow(windowItem.id);
+                        return;
+                      }
+                      if (isFocused) {
+                        minimizeWindow(windowItem.id);
+                        return;
+                      }
+                      focusWindow(windowItem.id);
+                    }}
+                    className={`px-2 flex items-center gap-1 w-36 cursor-pointer font-bold ${
+                      isFocused
+                        ? 'win-bevel-in bg-[#d3d3d3]'
+                        : 'win-bevel-out bg-[var(--win-gray)] hover:brightness-105'
+                    }`}
+                    style={{ fontFamily: 'MS Sans Serif, Tahoma, SimSun', fontSize: '11px' }}
+                  >
+                    <PixelIconMonitor size={12} />
+                    <span className="truncate">{windowItem.title}</span>
+                  </button>
+                );
+              })}
             {appOpen && (
               <div
-                className="win-bevel-in bg-[#dfdfdf] px-2 flex items-center gap-1 w-32 cursor-pointer font-bold"
-                style={{ fontFamily: 'MS Sans Serif, Tahoma, SimSun', fontSize: '11px', backgroundImage: 'linear-gradient(45deg, transparent 25%, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.05) 50%, transparent 50%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05) 100%)', backgroundSize: '4px 4px' }}
+                className="win-bevel-in bg-[#dfdfdf] px-2 flex items-center gap-1 w-28 cursor-default font-bold"
+                style={{ fontFamily: 'MS Sans Serif, Tahoma, SimSun', fontSize: '11px' }}
               >
                 <PixelIconMonitor size={12} />
                 <span className="truncate">{appOpen === 'memories' ? 'Memory Map' : appOpen}</span>

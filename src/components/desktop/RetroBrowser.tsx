@@ -212,8 +212,12 @@ const GlobeAnimation: React.FC = () => (
 );
 
 export const RetroBrowser: React.FC = () => {
-  const appOpen = useDesktopStore(s => s.appOpen);
-  const closeApp = useDesktopStore(s => s.closeApp);
+  const closeWindow = useDesktopStore(s => s.closeWindow);
+  const focusWindow = useDesktopStore(s => s.focusWindow);
+  const minimizeWindow = useDesktopStore(s => s.minimizeWindow);
+  const activeWindow = useDesktopStore(s => s.activeWindows.browser);
+  const focusedWindowId = useDesktopStore(s => s.focusedWindowId);
+  const targetPoint = useDesktopStore((s) => s.taskbarButtonCenters.browser);
 
   const [currentUrl, setCurrentUrl] = useState('http://bbs.our-secret-island.org');
   const [isLoading, setIsLoading] = useState(true);
@@ -232,7 +236,11 @@ export const RetroBrowser: React.FC = () => {
   const [statusFlash, setStatusFlash] = useState(false);
   const [currentUserIslandName, setCurrentUserIslandName] = useState('神秘访客');
 
-  const isHidden = appOpen !== 'browser';
+  const isHidden = !activeWindow;
+  const isMinimized = Boolean(activeWindow?.isMinimized);
+  const isActive = focusedWindowId === 'browser' && !isMinimized;
+  const targetX = targetPoint ? `calc(-50% + ${targetPoint.x - window.innerWidth / 2}px)` : '-130%';
+  const targetY = targetPoint ? `calc(-50% + ${targetPoint.y - window.innerHeight / 2}px)` : '72vh';
   const wasHiddenRef = useRef(true);
   const intervalRef = useRef<number | null>(null);
 
@@ -523,14 +531,27 @@ export const RetroBrowser: React.FC = () => {
     <AnimatePresence>
       {!isHidden && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
+          animate={{
+            opacity: isMinimized ? 0 : 1,
+            scale: isMinimized ? 0.25 : 1,
+            x: isMinimized ? targetX : '-50%',
+            y: isMinimized ? targetY : '-50%',
+          }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 pointer-events-none"
+          className="fixed left-1/2 top-1/2 z-[100] flex items-center justify-center pointer-events-none"
+          style={{
+            zIndex: activeWindow?.zIndex ?? 100,
+            pointerEvents: isMinimized ? 'none' : 'auto',
+          }}
+          onPointerDown={() => {
+            if (isMinimized) return;
+            focusWindow('browser');
+          }}
         >
           <div className="win-bevel-out bg-[var(--win-gray)] p-[2px] w-[800px] h-[600px] flex flex-col shadow-2xl pointer-events-auto">
-            <div className="h-[28px] u-dream-title flex items-center px-2 mb-[2px]">
+            <div className={`h-[28px] flex items-center px-2 mb-[2px] ${isActive ? 'u-dream-title' : 'u-dream-title-muted'}`}>
               <span className="text-white text-xs font-bold">Netscape Navigator</span>
               <div className="ml-4 flex gap-1">
                 <button onClick={handleBack} className="win-btn text-white text-xs px-2 py-0.5" title="返回帖子列表">◀</button>
@@ -538,8 +559,14 @@ export const RetroBrowser: React.FC = () => {
                 <button onClick={handleGoHome} className="win-btn text-white text-xs px-2 py-0.5" title="主页">🏠</button>
               </div>
               <button
-                onClick={closeApp}
+                onClick={() => minimizeWindow('browser')}
                 className="win-btn win-title-btn text-white text-xs ml-auto pb-[1px]"
+              >
+                _
+              </button>
+              <button
+                onClick={() => closeWindow('browser')}
+                className="win-btn win-title-btn text-white text-xs pb-[1px]"
               >
                 ✕
               </button>

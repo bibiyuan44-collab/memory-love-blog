@@ -22,23 +22,24 @@ const FOOD_WINDOW_ID = 'food-memories';
 export const App: React.FC = () => {
   const booting = useDesktopStore(s => s.booting);
   const appOpen = useDesktopStore(s => s.appOpen);
-  const windowOrder = useDesktopStore(s => s.windowOrder);
+  const activeWindows = useDesktopStore(s => s.activeWindows);
   const ambientColor = useDesktopStore(s => s.ambientColor);
   const closeWindow = useDesktopStore(s => s.closeWindow);
+  const focusWindow = useDesktopStore(s => s.focusWindow);
+  const minimizeWindow = useDesktopStore(s => s.minimizeWindow);
+  const setWindowMaximized = useDesktopStore(s => s.setWindowMaximized);
   const closeApp = useDesktopStore(s => s.closeApp);
   const mapOnlyMode = appOpen === 'memories';
-  const handleDesktopFeed = (e: React.MouseEvent<HTMLDivElement>) => {
+  const orderedWindows = Object.values(activeWindows).sort((a, b) => a.zIndex - b.zIndex);
+  const handleDesktopContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     if (booting || mapOnlyMode) return;
     e.preventDefault();
-    window.dispatchEvent(new CustomEvent('desktop-pet-feed', {
-      detail: { x: e.clientX, y: e.clientY, source: 'context-menu' },
-    }));
   };
 
   return (
     <div
       className={`relative w-screen h-screen overflow-hidden ${mapOnlyMode ? 'bg-transparent' : 'bg-[#6f9fd8]'}`}
-      onContextMenu={handleDesktopFeed}
+      onContextMenu={handleDesktopContextMenu}
     >
       {/* Background Effects */}
       {!mapOnlyMode && (
@@ -141,12 +142,18 @@ export const App: React.FC = () => {
 
             {/* Memory Windows (floating on top of desktop) */}
             <AnimatePresence>
-              {windowOrder.map((id, index) => {
+              {orderedWindows.map((windowItem) => {
+                const id = windowItem.id;
                 if (id === FOOD_WINDOW_ID) {
                   return (
                     <FoodMemoriesWindow
                       key={id}
-                      index={index}
+                      isMinimized={windowItem.isMinimized}
+                      isMaximized={windowItem.isMaximized}
+                      zIndex={windowItem.zIndex}
+                      onFocus={() => focusWindow(id)}
+                      onMinimize={() => minimizeWindow(id)}
+                      onToggleMaximize={(maximized) => setWindowMaximized(id, maximized)}
                       onClose={() => closeWindow(id)}
                     />
                   );
@@ -157,7 +164,10 @@ export const App: React.FC = () => {
                   <MemoryWindow 
                     key={id}
                     memory={memory}
-                    index={index}
+                    isMinimized={windowItem.isMinimized}
+                    zIndex={windowItem.zIndex}
+                    onFocus={() => focusWindow(id)}
+                    onMinimize={() => minimizeWindow(id)}
                     onClose={() => closeWindow(id)}
                   />
                 );

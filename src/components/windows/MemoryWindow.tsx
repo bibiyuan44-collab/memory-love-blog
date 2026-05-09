@@ -16,8 +16,11 @@ const AI_THOUGHTS = [
 export const MemoryWindow: React.FC<{
   memory: MemorySpot;
   onClose: () => void;
-  index: number;
-}> = ({ memory, onClose, index }) => {
+  onFocus: () => void;
+  onMinimize: () => void;
+  isMinimized: boolean;
+  zIndex: number;
+}> = ({ memory, onClose, onFocus, onMinimize, isMinimized, zIndex }) => {
   const setEditingPointId = useDesktopStore(s => s.setEditingPointId);
   
   const handleEdit = () => {
@@ -40,8 +43,11 @@ export const MemoryWindow: React.FC<{
       title={`RECORD.JPG - 图画`} 
       icon={memory.emoji} 
       onClose={onClose} 
+      onFocus={onFocus}
+      onMinimize={onMinimize}
       onEdit={handleEdit}
-      index={index}
+      isMinimized={isMinimized}
+      zIndex={zIndex}
       width="min(800px, 90vw)"
       height="min(600px, 80vh)"
     >

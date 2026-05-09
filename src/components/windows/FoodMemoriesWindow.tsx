@@ -34,7 +34,12 @@ interface FoodMemoryDbRow {
 }
 
 interface FoodMemoriesWindowProps {
-  index: number;
+  isMinimized: boolean;
+  isMaximized: boolean;
+  zIndex: number;
+  onFocus: () => void;
+  onMinimize: () => void;
+  onToggleMaximize: (maximized: boolean) => void;
   onClose: () => void;
 }
 
@@ -122,29 +127,32 @@ const getScatterRotate = (id: string) => {
 const FoodWindowShell: React.FC<
   FoodMemoriesWindowProps & {
     children: React.ReactNode;
-    isMaximized: boolean;
-    onToggleMaximize: () => void;
   }
 > = ({
-  index,
-  onClose,
+  isMinimized,
   isMaximized,
+  zIndex,
+  onFocus,
+  onMinimize,
   onToggleMaximize,
+  onClose,
   children,
 }) => {
-  const focusWindow = useDesktopStore((s) => s.focusWindow);
-  const activeMemory = useDesktopStore((s) => s.activeMemory);
-  const isActive = activeMemory === FOOD_WINDOW_ID;
+  const focusedWindowId = useDesktopStore((s) => s.focusedWindowId);
+  const targetPoint = useDesktopStore((s) => s.taskbarButtonCenters[FOOD_WINDOW_ID]);
+  const isActive = focusedWindowId === FOOD_WINDOW_ID && !isMinimized;
+  const targetX = targetPoint ? `calc(-50% + ${targetPoint.x - window.innerWidth / 2}px)` : '-130%';
+  const targetY = targetPoint ? `calc(-50% + ${targetPoint.y - window.innerHeight / 2}px)` : '72vh';
 
   return (
     <motion.div
       layout
       initial={{ scale: 0.6, opacity: 0, x: '-50%', y: '-50%' }}
       animate={{
-        scale: 1,
-        opacity: 1,
-        x: isMaximized ? 0 : '-50%',
-        y: isMaximized ? 0 : '-50%',
+        scale: isMinimized ? 0.2 : 1,
+        opacity: isMinimized ? 0 : 1,
+        x: isMinimized ? targetX : (isMaximized ? 0 : '-50%'),
+        y: isMinimized ? targetY : (isMaximized ? 0 : '-50%'),
       }}
       transition={{
         duration: 0.22,
@@ -152,28 +160,41 @@ const FoodWindowShell: React.FC<
         layout: { duration: 0.26, ease: [0.2, 0.78, 0.2, 1] },
       }}
       exit={{ scale: 0.94, opacity: 0, transition: { duration: 0.16 } }}
-      drag={!isMaximized}
+      drag={!isMaximized && !isMinimized}
       dragMomentum={false}
-      onPointerDown={() => focusWindow(FOOD_WINDOW_ID)}
+      onPointerDown={() => {
+        if (isMinimized) return;
+        onFocus();
+      }}
       className={`fixed z-50 flex select-none flex-col bg-[#c0c0c0] p-[3px] win-bevel-out ${
         isMaximized ? 'inset-0 h-full w-full' : 'left-1/2 top-1/2 h-[640px] w-[520px]'
       }`}
       style={{
-        zIndex: isMaximized ? 999 : 100 + index,
+        zIndex: isMaximized ? Math.max(zIndex, 999) : zIndex,
         boxShadow: isActive ? '3px 3px 0 rgba(0,0,0,0.36), 0 0 18px rgba(0,0,0,0.32)' : '2px 2px 0 rgba(0,0,0,0.28)',
+        pointerEvents: isMinimized ? 'none' : 'auto',
       }}
     >
       <div className="win-title-bar flex h-[22px] flex-shrink-0 cursor-grab items-center gap-1 bg-[linear-gradient(90deg,#000080_0%,#0b48b5_52%,#1084d0_100%)] px-1 active:cursor-grabbing">
         <span className="text-[13px]">🍜</span>
         <span className="ml-1 flex-1 truncate text-[12px] font-bold text-white">[ Meal Tracker & Wishlist ]</span>
         <div className="flex gap-[2px]">
-          <button className="win-btn win-title-btn" onPointerDown={(e) => e.stopPropagation()}>_</button>
           <button
             className="win-btn win-title-btn"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
-              onToggleMaximize();
+              onMinimize();
+            }}
+          >
+            _
+          </button>
+          <button
+            className="win-btn win-title-btn"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleMaximize(!isMaximized);
             }}
           >
             {isMaximized ? '❐' : '□'}
@@ -422,12 +443,19 @@ const FoodTicket: React.FC<{
   );
 };
 
-export const FoodMemoriesWindow: React.FC<FoodMemoriesWindowProps> = ({ index, onClose }) => {
+export const FoodMemoriesWindow: React.FC<FoodMemoriesWindowProps> = ({
+  isMinimized,
+  isMaximized,
+  zIndex,
+  onFocus,
+  onMinimize,
+  onToggleMaximize,
+  onClose,
+}) => {
   const [tickets, setTickets] = useState<FoodMemory[]>([]);
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [completionTicket, setCompletionTicket] = useState<FoodMemory | null>(null);
   const [printingData, setPrintingData] = useState<PrintingData | null>(null);
-  const [isMaximized, setIsMaximized] = useState(false);
   const [focusedPane, setFocusedPane] = useState<'wishlist' | 'memories' | null>(null);
   const [statusText, setStatusText] = useState('READY');
 
@@ -615,10 +643,13 @@ export const FoodMemoriesWindow: React.FC<FoodMemoriesWindowProps> = ({ index, o
 
   return (
     <FoodWindowShell
-      index={index}
-      onClose={onClose}
+      isMinimized={isMinimized}
       isMaximized={isMaximized}
-      onToggleMaximize={() => setIsMaximized((prev) => !prev)}
+      zIndex={zIndex}
+      onFocus={onFocus}
+      onMinimize={onMinimize}
+      onToggleMaximize={onToggleMaximize}
+      onClose={onClose}
     >
       <div className="flex flex-shrink-0 gap-2 border-b border-[#808080] bg-[#c0c0c0] p-2">
         <button

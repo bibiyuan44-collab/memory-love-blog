@@ -10,15 +10,18 @@ interface WindowFrameProps {
   width?: string;
   height?: string;
   onClose: () => void;
+  onFocus: () => void;
+  onMinimize: () => void;
   onEdit?: () => void;
-  index: number;
+  isMinimized: boolean;
+  zIndex: number;
 }
 
 export const WindowFrame: React.FC<WindowFrameProps> = ({ 
-  id, title, icon = '📁', children, width = '600px', height = '450px', onClose, onEdit, index 
+  id, title, icon = '📁', children, width = '600px', height = '450px', onClose, onFocus, onMinimize, onEdit, isMinimized, zIndex
 }) => {
-  const focusWindow = useDesktopStore(s => s.focusWindow);
-  const activeMemory = useDesktopStore(s => s.activeMemory);
+  const focusedWindowId = useDesktopStore(s => s.focusedWindowId);
+  const targetPoint = useDesktopStore((s) => s.taskbarButtonCenters[id]);
   const [flash, setFlash] = useState(false);
 
   useEffect(() => {
@@ -32,26 +35,38 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
     return () => window.removeEventListener('trigger-window-flash', handleFlash as EventListener);
   }, [id]);
 
-  const isActive = id === activeMemory;
+  const isActive = id === focusedWindowId && !isMinimized;
+  const targetX = targetPoint ? `calc(-50% + ${targetPoint.x - window.innerWidth / 2}px)` : '-135%';
+  const targetY = targetPoint ? `calc(-50% + ${targetPoint.y - window.innerHeight / 2}px)` : '72vh';
 
   return (
     <motion.div
       initial={{ scale: 0.5, opacity: 0, x: '-50%', y: '-50%' }}
-      animate={{ scale: 1, opacity: 1, x: '-50%', y: '-50%' }}
+      animate={{
+        scale: isMinimized ? 0.25 : 1,
+        opacity: isMinimized ? 0 : 1,
+        x: isMinimized ? targetX : '-50%',
+        y: isMinimized ? targetY : '-50%',
+      }}
       exit={{ 
         scale: 1.05, 
         opacity: 0, 
         transition: { duration: 0.2 }
       }}
-      drag
+      drag={!isMinimized}
       dragMomentum={false}
-      onPointerDown={() => focusWindow(id)}
+      onPointerDown={() => {
+        if (isMinimized) return;
+        onFocus();
+      }}
+      transition={{ duration: 0.24, ease: [0.2, 0.78, 0.2, 1] }}
       className="fixed top-1/2 left-1/2 flex flex-col p-[3px] z-50 select-none win-bevel-out"
       style={{ 
         width, height, 
-        zIndex: 100 + index,
+        zIndex,
         filter: flash ? 'brightness(1.2)' : 'none',
-        boxShadow: isActive ? '2px 2px 10px rgba(0,0,0,0.5)' : 'none'
+        boxShadow: isActive ? '2px 2px 10px rgba(0,0,0,0.5)' : 'none',
+        pointerEvents: isMinimized ? 'none' : 'auto',
       }}
     >
       {/* Win98 Classic Title Bar */}
@@ -63,7 +78,16 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
           {title}
         </span>
         <div className="flex gap-[2px] flex-shrink-0 mr-[1px]">
-          <button className="win-btn win-title-btn">_</button>
+          <button
+            className="win-btn win-title-btn"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onMinimize();
+            }}
+          >
+            _
+          </button>
           <button className="win-btn win-title-btn">□</button>
           <button 
             onClick={(e) => { e.stopPropagation(); onClose(); }}
