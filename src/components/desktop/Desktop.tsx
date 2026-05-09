@@ -11,6 +11,7 @@ import {
   PixelIconRecycle,
   PixelIconTaskmgr,
   PixelIconDialup,
+  PixelIconFoodLog,
   PixelIconFolder,
   PixelIconMonitor,
   PixelIconSettings,
@@ -170,7 +171,7 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
   const trashRef = useRef<HTMLDivElement>(null);
   const [trashFull, setTrashFull] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [iconsList, setIconsList] = useState(['memories', 'photos', 'chat', 'trash', 'fight', 'taskmgr', 'dialup']);
+  const [iconsList, setIconsList] = useState(['memories', 'photos', 'food', 'chat', 'trash', 'fight', 'taskmgr', 'dialup']);
   const [resetKey, setResetKey] = useState(0);
   const [sorryOpen, setSorryOpen] = useState(false);
 
@@ -240,6 +241,7 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
     memories: { name: 'Memories.exe', icon: <PixelIconHeart size={36} />, action: () => openApp('memories') },
     photos: { name: 'Our Photos', icon: <PixelIconPolaroid size={36} />, action: () => openApp('photos') },
     chat: { name: 'Chat History.txt', icon: <PixelIconDocLines size={36} />, action: () => {} },
+    food: { name: 'FOOD_LOG.EXE', icon: <PixelIconFoodLog size={36} />, action: () => openWindow('food-memories') },
     trash: { name: 'Recycle Bin', icon: <PixelIconRecycle full={trashFull} size={36} />, action: () => {} },
     fight: { name: '吵架记录.txt', icon: <PixelIconDoc size={36} />, action: () => {} },
     sorry: { name: '对不起.txt', icon: <PixelIconDocHeart size={36} />, action: () => setSorryOpen(true) },

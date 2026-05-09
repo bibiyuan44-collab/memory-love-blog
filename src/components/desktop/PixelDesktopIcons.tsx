@@ -288,6 +288,35 @@ export function PixelIconDialup({ size = 36, className }: PixelIconProps) {
   );
 }
 
+/** Food log — pixel receipt with chopsticks */
+export function PixelIconFoodLog({ size = 36, className }: PixelIconProps) {
+  return (
+    <div className={className}>
+      <PixelGrid
+        size={size}
+        rows={[
+          '................',
+          '...oooooooooo...',
+          '..owwwwwwwwwwo..',
+          '..owsssssssswo..',
+          '..owsossossowo..',
+          '..owsssssssswo..',
+          '..owmmmmmmmmwo..',
+          '..owmssssssmwo..',
+          '..owmmmmmmmmwo..',
+          '..owsssssssswo..',
+          '..owllllllllwo..',
+          '..owllllllllwo..',
+          '..owwwwwwwwwwo..',
+          '...oooooooooo...',
+          '....o.o.o.o.....',
+          '................'
+        ]}
+      />
+    </div>
+  );
+}
+
 /** Start menu: programs folder tab */
 export function PixelIconFolder({ size = 16, className }: PixelIconProps) {
   return (

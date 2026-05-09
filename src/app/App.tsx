@@ -13,8 +13,11 @@ import { MemoryMap } from '@/components/map/MemoryMap';
 import { MemoryWindow } from '@/components/windows/MemoryWindow';
 import { ChatApp } from '@/components/windows/ChatApp';
 import { OurPhotos } from '@/components/windows/OurPhotos';
+import { FoodMemoriesWindow } from '@/components/windows/FoodMemoriesWindow';
 import { Stars, DreamyDecor, MouseTrail } from '@/components/effects';
 import { memorySpots } from '@/data/memorySpots';
+
+const FOOD_WINDOW_ID = 'food-memories';
 
 export const App: React.FC = () => {
   const booting = useDesktopStore(s => s.booting);
@@ -139,6 +142,15 @@ export const App: React.FC = () => {
             {/* Memory Windows (floating on top of desktop) */}
             <AnimatePresence>
               {windowOrder.map((id, index) => {
+                if (id === FOOD_WINDOW_ID) {
+                  return (
+                    <FoodMemoriesWindow
+                      key={id}
+                      index={index}
+                      onClose={() => closeWindow(id)}
+                    />
+                  );
+                }
                 const memory = memorySpots.find(m => m.id === id);
                 if (!memory) return null;
                 return (
