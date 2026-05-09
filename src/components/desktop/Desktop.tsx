@@ -440,8 +440,8 @@ export const Desktop: React.FC<{ children?: React.ReactNode }> = ({ children }) 
               <span className="px-1.5 u-dream-hover cursor-pointer underline decoration-transparent hover:decoration-white underline-offset-2">帮助(H)</span>
             </div>
             <div className="win-bevel-in bg-white h-64 p-3 overflow-auto text-[15px] leading-relaxed text-black" style={{ fontFamily: 'SimSun' }}>
-              宝宝，那天是我态度不好，其实我心里一直很后悔...<br/><br/>
-              (请在这里补充你想说的话)<br/><br/> 
+              突然不知道说什么了...不喜欢吵架希望我们可以因为一些小矛盾分开<br/><br/>
+              可以一直和你在一起<br/><br/> 
             </div>
           </motion.div>
         </div>

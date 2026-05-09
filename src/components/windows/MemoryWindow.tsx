@@ -5,12 +5,12 @@ import { WindowFrame } from './WindowFrame';
 import { useDesktopStore } from '@/store/useDesktopStore';
 
 const AI_THOUGHTS = [
-  "我记得你当时笑了。",
-  "那天其实我很紧张。",
-  "偷偷看了你好多次。",
-  "后来风吹过的时候，我想抱紧你。",
-  "真希望时间停在那里。",
-  "你跑起来的样子很可爱。"
+  "kk",
+  "kk",
+  "kk",
+  "kk",
+  "kk",
+  "kk"
 ];
 
 export const MemoryWindow: React.FC<{
@@ -32,7 +32,7 @@ export const MemoryWindow: React.FC<{
   
   // Calculate days together (assuming starting point for demo)
   const daysTogether = useMemo(() => {
-    const start = new Date('2022-09-15').getTime();
+    const start = new Date('2025-11-21').getTime();
     const now = new Date().getTime();
     return Math.floor((now - start) / (1000 * 60 * 60 * 24));
   }, []);
@@ -83,7 +83,7 @@ export const MemoryWindow: React.FC<{
             </div>
             
             <div className="absolute -bottom-6 -right-6 font-comic text-xs text-blue-800 rotate-12 opacity-60 max-w-[100px]">
-              * 完美的一天
+              * -
             </div>
           </motion.div>
         </div>
@@ -95,7 +95,7 @@ export const MemoryWindow: React.FC<{
               {memory.name}
             </h2>
             <span className="font-vt323 text-gray-500">
-              我们已经一起 {daysTogether} 天
+              神秘日子已经 {daysTogether} 天了
             </span>
           </div>
 
